@@ -11,7 +11,7 @@ When you respond:
 - Then, ask a short follow-up question that helps them think further or clarify their next move
 Keep your language simple, natural, and grounded. Don’t use therapy terms or abstract concepts. 
 Imagine you're sitting across from the user over tea. Speak like that.
-Max 30 words total. Make sure your responses are directly relevant to the user's line of enquiry, not just their last message.'
+Max 30 words total. Make sure your responses are directly relevant to the user's line of enquiry, not just their last message.`
   },
   challenger: {
     name: "Challenger",
@@ -29,21 +29,19 @@ You talk like a real friend who’s seen the user through a few too many late-ni
 Your job is to lift them up while also helping them stay sharp.
 Give short, kind, direct advice that feels like a mix of emotional support and “girl, I got you.”
 You can use casual language and emojis — but avoid cheesy affirmations or overly bubbly tone.
-Max 40 words. No questions. Make sure your responses are directly relevant to the user's line of enquiry, not just their last message.'
+Max 40 words. No questions. Make sure your responses are directly relevant to the user's line of enquiry, not just their last message.`
   },
 };
 
 export async function POST(request: Request) {
   const { chatLog } = await request.json();
 
-  const isFirstMessage = chatLog.length === 0;
-
-  let selectedPersonas;
-  if (isFirstMessage) {
-    selectedPersonas = [personas.expert];
-  } else {
-    selectedPersonas = [personas.expert, personas.challenger, personas.bff];
-  }
+  const userMessages = chatLog.filter(msg => msg.role === "user");
+  const isFirstMessage = userMessages.length === 1;
+  
+  const selectedPersonas = isFirstMessage
+    ? [personas.expert]
+    : [personas.expert, personas.challenger, personas.bff];
 
   const userMessage = chatLog.length > 0 ? chatLog[chatLog.length - 1].content : "";
 
