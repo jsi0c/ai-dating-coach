@@ -47,17 +47,17 @@ Max 40 words. No questions.
 };
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  const body: { message?: string; phase?: 'expert' | 'others' } = await req.json();
   const userMessage = body.message?.trim();
-  const phase = body.phase; // 'expert' or 'others'
+  const phase = body.phase;
 
   if (!userMessage || !phase) {
     return NextResponse.json({ error: 'Missing message or phase' }, { status: 400 });
   }
 
   try {
-    const seenResponses = new Set();
-    const responses = [];
+    const seenResponses = new Set<string>();
+    const responses: { name: string; icon: string; response: string }[] = [];
 
     const selectedPersonas =
       phase === 'expert' ? [personas.expert] : personas.others;
@@ -92,11 +92,9 @@ Keep responses under 50 words. Be emotionally supportive and direct.
     }
 
     return NextResponse.json({ responses });
-} catch (err: unknown) {
+  } catch (err: unknown) {
     console.error(err);
-    if (err instanceof Error) {
-        return NextResponse.json({ error: err.message }, { status: 500 });
-      }
-      return NextResponse.json({ error: 'Unknown error' }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
