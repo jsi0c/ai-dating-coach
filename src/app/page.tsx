@@ -17,7 +17,7 @@ export default function Home() {
   const [message, setMessage] = useState('');
   const [chatLog, setChatLog] = useState<MessageBlock[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [, setError] = useState('');
   const [conversationPhase, setConversationPhase] = useState<'expert' | 'awaiting-user-response' | 'others'>('expert');
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
@@ -58,10 +58,12 @@ export default function Home() {
       } else {
         setError(data.error || 'Something went wrong');
       }
-    } catch (err: any) {
-      setError(err.message || 'Unknown error');
-    } finally {
-      setLoading(false);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Unknown error');
+      }
     }
   };
 
