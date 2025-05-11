@@ -37,9 +37,10 @@ export async function POST(request: Request) {
   const { chatLog } = await request.json();
 
   const userMessages = chatLog.filter(msg => msg.role === "user");
-  const isFirstMessage = userMessages.length === 1;
+  const lastUserMessageIndex = [...chatLog].reverse().findIndex(msg => msg.role === "user");
+  const isFirstUserMessage = userMessages.length === 1 && lastUserMessageIndex === 0;
   
-  const selectedPersonas = isFirstMessage
+  const selectedPersonas = isFirstUserMessage
     ? [personas.expert]
     : [personas.expert, personas.challenger, personas.bff];
 
