@@ -92,7 +92,7 @@ Keep responses under 50 words. Be emotionally supportive and direct.
     }
 
     return NextResponse.json({ responses });
-} catch (err: unknown) {
+} catch (err: any) {
     console.error(err);
     if (err instanceof Error) {
       return NextResponse.json({ error: err.message }, { status: 500 });

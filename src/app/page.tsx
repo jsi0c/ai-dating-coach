@@ -17,19 +17,16 @@ export default function Home() {
   const [message, setMessage] = useState('');
   const [chatLog, setChatLog] = useState<MessageBlock[]>([]);
   const [loading, setLoading] = useState(false);
-  const [, setError] = useState('');
   const [conversationPhase, setConversationPhase] = useState<'expert' | 'awaiting-user-response' | 'others'>('expert');
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
   const sendMessage = async (input: string) => {
     if (!input.trim()) return;
 
-    // Show user's message instantly
     const newUserBlock: MessageBlock = { from: 'user', content: input };
     setChatLog((prev) => [...prev, newUserBlock]);
     setMessage('');
     setLoading(true);
-    setError('');
 
     try {
       const res = await fetch('/api/chat', {
@@ -41,29 +38,30 @@ export default function Home() {
         }),
       });
 
-      const data = await res.json();
+      const data: { responses: PersonaResponse[]; error?: string } = await res.json();
 
       if (res.ok) {
         const newAIBlock: MessageBlock = { from: 'ai', content: data.responses };
         setChatLog((prev) => [...prev, newAIBlock]);
 
-        // Phase logic
         if (conversationPhase === 'expert') {
           setConversationPhase('awaiting-user-response');
         } else if (conversationPhase === 'awaiting-user-response') {
           setConversationPhase('others');
-        } else if (conversationPhase === 'others') {
+        } else {
           setConversationPhase('expert');
         }
       } else {
-        setError(data.error || 'Something went wrong');
+        console.error(data.error || 'Something went wrong');
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message);
+        console.error(err.message);
       } else {
-        setError('Unknown error');
+        console.error('Unknown error');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,31 +76,31 @@ export default function Home() {
         <p className="text-md text-gray-400">Get clarity with your personal sounding board.</p>
 
         {chatLog.map((block, index) => {
-  if (block.from === 'user') {
-    return (
-      <div key={index} className="flex justify-end mt-2">
-        <div className="bg-green-600 text-white px-4 py-2 rounded-lg max-w-[80%] text-sm shadow">
-          {typeof block.content === 'string' ? block.content : ''}
-        </div>
-      </div>
-    );
-  }
+          if (block.from === 'user') {
+            return (
+              <div key={index} className="flex justify-end mt-2">
+                <div className="bg-green-600 text-white px-4 py-2 rounded-lg max-w-[80%] text-sm shadow">
+                  {typeof block.content === 'string' ? block.content : ''}
+                </div>
+              </div>
+            );
+          }
 
-  const responses = block.content as PersonaResponse[];
-  return (
-    <div key={index} className="space-y-3 mt-6">
-      {responses.map((r, i) => (
-        <div key={i} className="bg-[#2d2d2d] border border-gray-700 p-4 rounded-lg shadow-md flex gap-3">
-          <div className="text-2xl">{r.icon}</div>
-          <div>
-            <div className="text-green-400 font-semibold text-sm mb-1">{r.name}</div>
-            <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{r.response}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-})}
+          const responses = block.content as PersonaResponse[];
+          return (
+            <div key={index} className="space-y-3 mt-6">
+              {responses.map((r, i) => (
+                <div key={i} className="bg-[#2d2d2d] border border-gray-700 p-4 rounded-lg shadow-md flex gap-3">
+                  <div className="text-2xl">{r.icon}</div>
+                  <div>
+                    <div className="text-green-400 font-semibold text-sm mb-1">{r.name}</div>
+                    <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{r.response}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
 
         {loading && (
           <div className="mt-3 flex items-center gap-2 text-gray-400 font-mono animate-pulse">
@@ -113,7 +111,6 @@ export default function Home() {
         <div ref={chatBottomRef} className="h-1" />
       </div>
 
-      {/* Bottom fixed input bar */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
