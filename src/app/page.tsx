@@ -76,31 +76,31 @@ export default function Home() {
         <p className="text-md text-gray-400">Get clarity with your personal sounding board.</p>
 
         {chatLog.map((block, index) => {
-          if (block.from === 'user') {
-            return (
-              <div key={index} className="flex justify-end mt-2">
-                <div className="bg-green-600 text-white px-4 py-2 rounded-lg max-w-[80%] text-sm shadow">
-                  {block.content}
-                </div>
-              </div>
-            );
-          }
+  if (block.from === 'user') {
+    return (
+      <div key={index} className="flex justify-end mt-2">
+        <div className="bg-green-600 text-white px-4 py-2 rounded-lg max-w-[80%] text-sm shadow">
+          {typeof block.content === 'string' ? block.content : ''}
+        </div>
+      </div>
+    );
+  }
 
-          const responses = block.content as PersonaResponse[];
-          return (
-            <div key={index} className="space-y-3 mt-6">
-              {responses.map((r, i) => (
-                <div key={i} className="bg-[#2d2d2d] border border-gray-700 p-4 rounded-lg shadow-md flex gap-3">
-                  <div className="text-2xl">{r.icon}</div>
-                  <div>
-                    <div className="text-green-400 font-semibold text-sm mb-1">{r.name}</div>
-                    <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{r.response}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          );
-        })}
+  const responses = block.content as PersonaResponse[];
+  return (
+    <div key={index} className="space-y-3 mt-6">
+      {responses.map((r, i) => (
+        <div key={i} className="bg-[#2d2d2d] border border-gray-700 p-4 rounded-lg shadow-md flex gap-3">
+          <div className="text-2xl">{r.icon}</div>
+          <div>
+            <div className="text-green-400 font-semibold text-sm mb-1">{r.name}</div>
+            <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{r.response}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+})}
 
         {loading && (
           <div className="mt-3 flex items-center gap-2 text-gray-400 font-mono animate-pulse">
