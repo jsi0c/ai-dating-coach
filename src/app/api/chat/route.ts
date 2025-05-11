@@ -94,7 +94,8 @@ Keep responses under 50 words. Be emotionally supportive and direct.
     return NextResponse.json({ responses });
   } catch (err: unknown) {
     console.error(err);
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    const errorMessage: string =
+      err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
