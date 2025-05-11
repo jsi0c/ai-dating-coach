@@ -29,7 +29,7 @@ You talk like a real friend who’s seen the user through a few too many late-ni
 Your job is to lift them up while also helping them stay sharp.
 Give short, kind, direct advice that feels like a mix of emotional support and “girl, I got you.”
 You can use casual language and emojis — but avoid cheesy affirmations or overly bubbly tone.
-Max 40 words. No questions. Make sure your responses are directly relevant to the user's line of enquiry, not just their last message.`
+Max 25 words. No questions. Make sure your responses are directly relevant to the user's line of enquiry, not just their last message.`
   },
 };
 
@@ -37,14 +37,11 @@ export async function POST(request: Request) {
   const { chatLog } = await request.json();
 
   const userMessages = chatLog.filter(msg => msg.role === "user");
-  const lastUserMessageIndex = [...chatLog].reverse().findIndex(msg => msg.role === "user");
-  const isFirstUserMessage = userMessages.length === 1 && lastUserMessageIndex === 0;
-  
+  const isFirstUserMessage = userMessages.length === 1;
+
   const selectedPersonas = isFirstUserMessage
     ? [personas.expert]
     : [personas.expert, personas.challenger, personas.bff];
-
-  const userMessage = chatLog.length > 0 ? chatLog[chatLog.length - 1].content : "";
 
   const responses = [];
 
@@ -63,7 +60,7 @@ export async function POST(request: Request) {
       n: 1,
     };
 
-    // Send typing message (simulate)
+    // Simulate typing delay before each response
     await new Promise((resolve) => setTimeout(resolve, 1600));
 
     const stream = await OpenAIStream(payload);
@@ -81,7 +78,10 @@ export async function POST(request: Request) {
       }
     }
 
-    responses.push({ name: persona.name, response: personaResponse.trim() });
+    responses.push({
+      name: persona.name,
+      response: personaResponse.trim(),
+    });
   }
 
   return NextResponse.json({ responses });
