@@ -59,8 +59,7 @@ export async function POST(req: NextRequest) {
     const seenResponses = new Set<string>();
     const responses: { name: string; icon: string; response: string }[] = [];
 
-    const selectedPersonas =
-      phase === 'expert' ? [personas.expert] : personas.others;
+    const selectedPersonas = [personas.expert, ...personas.others];
 
     for (const persona of selectedPersonas) {
       const systemPrompt = `
