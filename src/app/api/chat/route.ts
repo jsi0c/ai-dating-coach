@@ -99,14 +99,14 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
     await new Promise((resolve) => setTimeout(resolve, 1600));
 
     const chunks = [];
-    const stream = await OpenAIStream(payload);
-    const reader = stream.getReader();
+    const stream = OpenAIStream(payload);
+    const reader = stream[Symbol.asyncIterator]();
 
     while (true) {
-      const { done, value } = await reader.read();
+      const { done, value } = await reader.next();
       if (done) break;
       if (value) {
-        const chunk = new TextDecoder().decode(value);
+        const chunk = typeof value === "string" ? value : new TextDecoder().decode(value);
         chunks.push(chunk);
       }
     }
