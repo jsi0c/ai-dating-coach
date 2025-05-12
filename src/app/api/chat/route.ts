@@ -90,11 +90,10 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
     const chunks = [];
     const stream = await OpenAIStream(payload);
     const reader = stream.getReader();
-    let done = false;
 
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
       if (value) {
         const chunk = new TextDecoder().decode(value);
         chunks.push(chunk);
