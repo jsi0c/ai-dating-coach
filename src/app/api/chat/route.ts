@@ -35,8 +35,8 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
 
 // 🔥 Suggested prompts to show when user hasn't typed anything yet
 const suggestedPrompts = [
-  "I want to get more dates but don't know how",
-  "I keep getting ghosted after great first dates.",
+  "I want to get more dates!",
+  "I lose momentum after a couple dates",
   "I'm not sure if this is the right person for me?",
 ];
 

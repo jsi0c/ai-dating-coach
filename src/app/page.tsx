@@ -171,9 +171,9 @@ export default function Home() {
       </form>
 
       {suggestions.length > 0 && chatLog.length === 0 && (
-        <div className="fixed bottom-[80px] left-0 right-0 px-4">
+        <div className="fixed bottom-[60px] left-0 right-0 px-4">
           <div className="max-w-md mx-auto bg-[#1e1e1e] space-y-2">
-            <p className="text-gray-400 text-sm">Try one of these:</p>
+            <p className="text-gray-400 text-sm">Does one of these fit? Or share in your own words.</p>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((prompt, idx) => (
                 <button
