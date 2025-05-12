@@ -83,22 +83,27 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
 
     const stream = await OpenAIStream(payload);
     const reader = stream.getReader();
+    const decoder = new TextDecoder("utf-8");
 
     let done = false;
-    let personaResponse = "";
+    let fullResponse = "";
 
     while (!done) {
       const { value, done: doneReading } = await reader.read();
       done = doneReading;
       if (value) {
-        const chunk = new TextDecoder().decode(value);
-        personaResponse += chunk;
+        const chunk = decoder.decode(value, { stream: true });
+        fullResponse += chunk;
       }
     }
 
+    // Attempt to extract the actual message content from fullResponse
+    const matches = fullResponse.match(/"content":"(.*?)"/);
+    const extractedMessage = matches ? matches[1].replace(/\\n/g, "\n").replace(/\\"/g, '"') : "Oops! Couldn't parse response.";
+
     responses.push({
       name: persona.name,
-      response: personaResponse.trim(),
+      response: extractedMessage,
     });
   }
 
