@@ -5,7 +5,7 @@ export type OpenAIStreamPayload = ChatCompletionCreateParams & { stream: true };
 
 export async function OpenAIStream(payload: OpenAIStreamPayload): Promise<ReadableStream> {
   const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY!,
+    apiKey: process.env.OPENAI_API_KEY,   //Update this to your API KEY
   });
 
   const response = await openai.chat.completions.create({

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { OpenAIStream, OpenAIStreamPayload } from '@/utils/OpenAIStream';
+
 const personas = {
   expert: {
     name: "Expert",
@@ -32,45 +33,52 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
   },
 };
 
+// 🔥 Suggested prompts to show when user hasn't typed anything yet
+const suggestedPrompts = [
+  "I keep getting ghosted after great first dates.",
+  "I'm anxious waiting for their reply.",
+  "I don't know how to flirt without sounding awkward.",
+  "I always fall for people who aren't emotionally available.",
+  "I don't know if I should go on a second date."
+];
 
-  export async function POST(request: Request) {
-    const body = await request.json();
+export async function POST(request: Request) {
+  const body = await request.json();
 
-    console.log("🛠 Incoming request body:", JSON.stringify(body, null, 2)); // <-- Add this
+  console.log("🛠 Incoming request body:", JSON.stringify(body, null, 2));
 
-    let chatLog;
+  let chatLog;
 
-    if (Array.isArray(body.chatLog)) {
-      chatLog = body.chatLog.map((msg: { role?: string; from?: string; content: string }) => {
-        if (msg.role) {
-          return { from: msg.role, content: msg.content };
-        }
-        return msg;
-      });
-    } else if (body.message && body.phase) {
-      chatLog = [
-        { from: "user", content: body.message },
-      ];
-    } else {
-      return new Response(
-        JSON.stringify({ error: "Invalid or missing chatLog or message/phase format" }),
-        { status: 400 }
-      );
-    }
+  if (Array.isArray(body.chatLog)) {
+    chatLog = body.chatLog.map((msg: { role?: string; from?: string; content: string }) => {
+      if (msg.role) {
+        return { from: msg.role, content: msg.content };
+      }
+      return msg;
+    });
+  } else if (body.message && body.phase) {
+    chatLog = [{ from: "user", content: body.message }];
+  } else {
+    return new Response(
+      JSON.stringify({ error: "Invalid or missing chatLog or message/phase format" }),
+      { status: 400 }
+    );
+  }
 
-  // Count the number of user messages
+  const userMessages = chatLog.filter((msg: { from: string }) => msg.from === "user");
+  const isFirstUserMessage = userMessages.length === 1;
 
-  const userMessages = chatLog.filter((msg: { from: string }) => msg.from === "user");  const isFirstUserMessage = userMessages.length === 1;
+  // 🔥 Return suggested prompts if the user hasn't typed anything on first message
+  if (isFirstUserMessage && userMessages[0]?.content.trim() === "") {
+    return NextResponse.json({
+      suggestions: suggestedPrompts,
+      message: "Pick a prompt to get started, or type your own.",
+    });
+  }
 
-  // Debugging: Uncomment these lines if you want to see what's happening
-  // console.log("chatLog:", chatLog.map(msg => ({role: msg.role, name: msg.name, content: msg.content})));
-  // console.log("userMessages.length:", userMessages.length);
-  // console.log("isFirstUserMessage:", isFirstUserMessage);
-
-  // Select personas based on whether it's the first user message or not
   const selectedPersonas = isFirstUserMessage
     ? [personas.expert]
-    : [personas.expert, personas.challenger, personas.bff];
+    : [personas.bff, personas.challenger, personas.expert];
 
   const responses = [];
 
@@ -100,7 +108,6 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
       n: 1,
     };
 
-    // Simulate typing delay before each response
     await new Promise((resolve) => setTimeout(resolve, 1600));
 
     const stream = await OpenAIStream(payload);

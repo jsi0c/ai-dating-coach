@@ -17,15 +17,38 @@ export default function Home() {
   const [message, setMessage] = useState('');
   const [chatLog, setChatLog] = useState<MessageBlock[]>([]);
   const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [conversationPhase, setConversationPhase] = useState<'expert' | 'awaiting-user-response' | 'others'>('expert');
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
   const sendMessage = async (input: string) => {
-    if (!input.trim()) return;
+    if (!input.trim()) {
+      // Fetch suggestions on first load only
+      if (chatLog.length === 0) {
+        try {
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chatLog: [{ from: 'user', content: '' }],
+            }),
+          });
+
+          const data = await res.json();
+          if (data.suggestions) {
+            setSuggestions(data.suggestions);
+          }
+        } catch (err) {
+          console.error('Failed to fetch suggestions:', err);
+        }
+      }
+      return;
+    }
 
     const newUserBlock: MessageBlock = { from: 'user', content: input };
     setChatLog((prev) => [...prev, newUserBlock]);
     setMessage('');
+    setSuggestions([]);
     setLoading(true);
 
     try {
@@ -33,25 +56,29 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chatLog: [
-            ...chatLog,
-            { from: 'user', content: input }
-          ],
+          chatLog: [...chatLog, { from: 'user', content: input }],
         }),
       });
 
-      const data: { responses: PersonaResponse[]; error?: string } = await res.json();
+      const data: { responses?: PersonaResponse[]; suggestions?: string[]; error?: string } = await res.json();
 
       if (res.ok) {
-        const newAIBlock: MessageBlock = { from: 'ai', content: data.responses };
-        setChatLog((prev) => [...prev, newAIBlock]);
+        if (data.suggestions) {
+          setSuggestions(data.suggestions);
+          return;
+        }
 
-        if (conversationPhase === 'expert') {
-          setConversationPhase('awaiting-user-response');
-        } else if (conversationPhase === 'awaiting-user-response') {
-          setConversationPhase('others');
-        } else {
-          setConversationPhase('expert');
+        if (data.responses) {
+          const newAIBlock: MessageBlock = { from: 'ai', content: data.responses };
+          setChatLog((prev) => [...prev, newAIBlock]);
+
+          if (conversationPhase === 'expert') {
+            setConversationPhase('awaiting-user-response');
+          } else if (conversationPhase === 'awaiting-user-response') {
+            setConversationPhase('others');
+          } else {
+            setConversationPhase('expert');
+          }
         }
       } else {
         console.error(data.error || 'Something went wrong');
@@ -68,14 +95,40 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // Auto-scroll to bottom
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatLog]);
+
+  // Fetch suggestions on initial load
+  useEffect(() => {
+    sendMessage('');
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#1e1e1e] text-white flex flex-col items-center px-4 pt-8 pb-28 relative">
       <div className="w-full max-w-md space-y-4">
         <h1 className="text-3xl font-bold text-green-400">💬 Dating drama?</h1>
         <p className="text-md text-gray-400">Get clarity with your personal sounding board.</p>
+
+        {suggestions.length > 0 && chatLog.length === 0 && (
+          <div className="space-y-3 mt-6">
+            <p className="text-gray-400 text-sm">Try one of these to get started:</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestions.map((prompt, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    sendMessage(prompt);
+                    setSuggestions([]);
+                  }}
+                  className="text-sm bg-gray-700 hover:bg-green-700 text-white px-3 py-2 rounded-md transition"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {chatLog.map((block, index) => {
           if (block.from === 'user') {
