@@ -1,5 +1,4 @@
 import { OpenAI } from 'openai-edge';
-import { Stream } from 'openai-edge/stream';
 
 export type OpenAIStreamPayload = {
   model: string;
