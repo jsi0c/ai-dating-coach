@@ -1,19 +1,16 @@
 import OpenAI from 'openai';
+import { ChatCompletionCreateParamsStreaming } from 'openai/resources/chat';
 
-export type OpenAIStreamPayload = {
-  model: string;
-  messages: { role: string; content: string }[];
-  temperature: number;
-  max_tokens: number;
-  stream: boolean;
-  n: number;
-};
+export type OpenAIStreamPayload = ChatCompletionCreateParamsStreaming;
 
 export async function OpenAIStream(payload: OpenAIStreamPayload): Promise<ReadableStream> {
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY!,
   });
-
-  const response = await openai.chat.completions.create(payload);
+  // Ensure stream: true is always set
+  const response = await openai.chat.completions.create({
+    ...payload,
+    stream: true,
+  });
   return response as unknown as ReadableStream;
 }
