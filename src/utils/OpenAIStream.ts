@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
-import { ChatCompletionCreateParamsStreaming } from 'openai/resources/chat';
+import { ChatCompletionCreateParams } from 'openai/resources/chat/completions';
 
-export type OpenAIStreamPayload = ChatCompletionCreateParamsStreaming;
+export type OpenAIStreamPayload = ChatCompletionCreateParams & { stream: true };
 
 export async function OpenAIStream(payload: OpenAIStreamPayload): Promise<ReadableStream> {
   const openai = new OpenAI({
