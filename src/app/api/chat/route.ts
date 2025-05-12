@@ -35,11 +35,9 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
 
 // 🔥 Suggested prompts to show when user hasn't typed anything yet
 const suggestedPrompts = [
+  "I want to get more dates but don't know how",
   "I keep getting ghosted after great first dates.",
-  "I'm anxious waiting for their reply.",
-  "I don't know how to flirt without sounding awkward.",
-  "I always fall for people who aren't emotionally available.",
-  "I don't know if I should go on a second date."
+  "I'm not sure if this is the right person for me?",
 ];
 
 export async function POST(request: Request) {

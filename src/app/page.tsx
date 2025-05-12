@@ -17,14 +17,14 @@ export default function Home() {
   const [message, setMessage] = useState('');
   const [chatLog, setChatLog] = useState<MessageBlock[]>([]);
   const [loading, setLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]); // 🔥 for prompt suggestions
   const [conversationPhase, setConversationPhase] = useState<'expert' | 'awaiting-user-response' | 'others'>('expert');
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
   const sendMessage = async (input: string) => {
     if (!input.trim()) {
-      // Fetch suggestions on first load only
       if (chatLog.length === 0) {
+        // 🔥 fetch suggestions if empty initial input
         try {
           const res = await fetch('/api/chat', {
             method: 'POST',
@@ -48,7 +48,7 @@ export default function Home() {
     const newUserBlock: MessageBlock = { from: 'user', content: input };
     setChatLog((prev) => [...prev, newUserBlock]);
     setMessage('');
-    setSuggestions([]);
+    setSuggestions([]); // 🔥 hide prompts when user sends something
     setLoading(true);
 
     try {
@@ -95,13 +95,11 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // Auto-scroll to bottom
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatLog]);
 
-  // Fetch suggestions on initial load
   useEffect(() => {
-    sendMessage('');
+    sendMessage(''); // 🔥 trigger suggestions on load
   }, []);
 
   return (
@@ -110,26 +108,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-green-400">💬 Dating drama?</h1>
         <p className="text-md text-gray-400">Get clarity with your personal sounding board.</p>
 
-        {suggestions.length > 0 && chatLog.length === 0 && (
-          <div className="space-y-3 mt-6">
-            <p className="text-gray-400 text-sm">Try one of these to get started:</p>
-            <div className="flex flex-wrap gap-2">
-              {suggestions.map((prompt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    sendMessage(prompt);
-                    setSuggestions([]);
-                  }}
-                  className="text-sm bg-gray-700 hover:bg-green-700 text-white px-3 py-2 rounded-md transition"
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
+        {/* Chat log */}
         {chatLog.map((block, index) => {
           if (block.from === 'user') {
             return (
@@ -166,6 +145,7 @@ export default function Home() {
         <div ref={chatBottomRef} className="h-1" />
       </div>
 
+      {/* Input form */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -189,6 +169,28 @@ export default function Home() {
           </button>
         </div>
       </form>
+
+      {suggestions.length > 0 && chatLog.length === 0 && (
+        <div className="fixed bottom-[80px] left-0 right-0 px-4">
+          <div className="max-w-md mx-auto bg-[#1e1e1e] space-y-2">
+            <p className="text-gray-400 text-sm">Try one of these:</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestions.map((prompt, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    sendMessage(prompt);
+                    setSuggestions([]);
+                  }}
+                  className="text-sm bg-gray-700 hover:bg-green-700 text-white px-3 py-2 rounded-md transition"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
