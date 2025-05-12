@@ -36,11 +36,16 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
 export async function POST(request: Request) {
   const { chatLog } = await request.json();
 
-  // Count only user messages
+  // Count the number of user messages
   const userMessages = chatLog.filter(msg => msg.role === "user");
   const isFirstUserMessage = userMessages.length === 1;
 
-  // Only Expert on first user message, all three after that
+  // Debugging: Uncomment these lines if you want to see what's happening
+  // console.log("chatLog:", chatLog.map(msg => ({role: msg.role, name: msg.name, content: msg.content})));
+  // console.log("userMessages.length:", userMessages.length);
+  // console.log("isFirstUserMessage:", isFirstUserMessage);
+
+  // Select personas based on whether it's the first user message or not
   const selectedPersonas = isFirstUserMessage
     ? [personas.expert]
     : [personas.expert, personas.challenger, personas.bff];
