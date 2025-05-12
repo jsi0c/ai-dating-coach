@@ -88,7 +88,13 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
     await new Promise((resolve) => setTimeout(resolve, 1600));
 
     const stream = await OpenAIStream(payload);
-    const reader = (stream as ReadableStream).getReader();
+
+    if (!stream || typeof stream.getReader !== "function") {
+      console.error("❌ Invalid stream returned by OpenAIStream:", stream);
+      return NextResponse.json({ error: "Invalid stream from OpenAI" }, { status: 500 });
+    }
+
+    const reader = stream.getReader();
     const decoder = new TextDecoder("utf-8");
 
     let done = false;
