@@ -41,7 +41,7 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
     let chatLog;
 
     if (Array.isArray(body.chatLog)) {
-      chatLog = body.chatLog.map((msg: any) => {
+      chatLog = body.chatLog.map((msg: { role?: string; from?: string; content: string }) => {
         if (msg.role) {
           return { from: msg.role, content: msg.content };
         }
