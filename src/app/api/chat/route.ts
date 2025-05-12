@@ -32,15 +32,6 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
   },
 };
 
-export async function POST(request: Request) 
-  const body = await request.json();
-
-  if (!body || !Array.isArray(body.chatLog)) {
-    return new Response(
-      JSON.stringify({ error: "Invalid or missing chatLog" }),
-      { status: 400 }
-    );
-  }
 
   export async function POST(request: Request) {
     const body = await request.json();
