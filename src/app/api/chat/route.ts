@@ -1,5 +1,3 @@
-import OpenAI from 'openai';
-
 const personas = {
   expert: {
     name: "Expert",
