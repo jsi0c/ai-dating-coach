@@ -98,24 +98,15 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
     // Simulate typing delay before each response
     await new Promise((resolve) => setTimeout(resolve, 1600));
 
-    const chunks = [];
-    const stream = await OpenAIStream(payload);
-    const reader = stream.getReader();
+    const extractedMessageChunks: string[] = [];
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (value) {
-        const chunk = typeof value === "string" ? value : new TextDecoder().decode(value);
-        chunks.push(chunk);
+    for await (const chunk of await OpenAIStream(payload)) {
+      if (typeof chunk === "string") {
+        extractedMessageChunks.push(chunk);
       }
     }
-    const fullResponse = chunks.join("");
-    const parsedChunk = JSON.parse(fullResponse);
-    const extractedMessage =
-      parsedChunk.choices?.[0]?.delta?.content ||
-      parsedChunk.choices?.[0]?.message?.content ||
-      "Oops! Couldn't parse response.";
+
+    const extractedMessage = extractedMessageChunks.join("").trim();
 
     responses.push({
       name: persona.name,
