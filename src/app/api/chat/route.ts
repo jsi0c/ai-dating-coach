@@ -72,7 +72,18 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
   for (const persona of selectedPersonas) {
     const messages = [
       { role: "system", content: persona.systemPrompt },
-      ...chatLog,
+      ...chatLog.flatMap((msg) => {
+        if (msg.from === 'user') {
+          return [{ role: 'user', content: msg.content }];
+        } else if (Array.isArray(msg.content)) {
+          return msg.content.map(r => ({
+            role: 'assistant',
+            content: r.response,
+            name: r.name,
+          }));
+        }
+        return [];
+      }),
     ];
 
     const payload: OpenAIStreamPayload = {
