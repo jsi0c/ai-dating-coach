@@ -35,17 +35,23 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
 
   export async function POST(request: Request) {
     const body = await request.json();
-  
+
     console.log("🛠 Incoming request body:", JSON.stringify(body, null, 2)); // <-- Add this
-  
-    if (!body || !Array.isArray(body.chatLog)) {
+
+    let chatLog;
+
+    if (Array.isArray(body.chatLog)) {
+      chatLog = body.chatLog;
+    } else if (body.message && body.phase) {
+      chatLog = [
+        { role: "user", content: body.message },
+      ];
+    } else {
       return new Response(
-        JSON.stringify({ error: "Invalid or missing chatLog" }),
+        JSON.stringify({ error: "Invalid or missing chatLog or message/phase format" }),
         { status: 400 }
       );
     }
-
-  const chatLog = body.chatLog;
 
   // Count the number of user messages
 
