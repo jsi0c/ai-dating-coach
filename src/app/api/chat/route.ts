@@ -41,10 +41,15 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
     let chatLog;
 
     if (Array.isArray(body.chatLog)) {
-      chatLog = body.chatLog;
+      chatLog = body.chatLog.map((msg: any) => {
+        if (msg.role) {
+          return { from: msg.role, content: msg.content };
+        }
+        return msg;
+      });
     } else if (body.message && body.phase) {
       chatLog = [
-        { role: "user", content: body.message },
+        { from: "user", content: body.message },
       ];
     } else {
       return new Response(
@@ -55,7 +60,7 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
 
   // Count the number of user messages
 
-  const userMessages = chatLog.filter((msg: { role: string }) => msg.role === "user");  const isFirstUserMessage = userMessages.length === 1;
+  const userMessages = chatLog.filter((msg: { from: string }) => msg.from === "user");  const isFirstUserMessage = userMessages.length === 1;
 
   // Debugging: Uncomment these lines if you want to see what's happening
   // console.log("chatLog:", chatLog.map(msg => ({role: msg.role, name: msg.name, content: msg.content})));
@@ -98,15 +103,21 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
     // Simulate typing delay before each response
     await new Promise((resolve) => setTimeout(resolve, 1600));
 
-    const extractedMessageChunks: string[] = [];
+    const stream = await OpenAIStream(payload);
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
+    let extractedMessage = "";
 
-    for await (const chunk of await OpenAIStream(payload)) {
-      if (typeof chunk === "string") {
-        extractedMessageChunks.push(chunk);
-      }
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      extractedMessage += decoder.decode(value, { stream: true });
     }
 
-    const extractedMessage = extractedMessageChunks.join("").trim();
+    extractedMessage = extractedMessage.trim();
+    if (!extractedMessage) {
+      extractedMessage = "Sorry, I didn't catch that. Can you rephrase?";
+    }
 
     responses.push({
       name: persona.name,
