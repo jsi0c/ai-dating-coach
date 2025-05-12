@@ -104,8 +104,8 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
     }
 
     // Attempt to extract the actual message content from fullResponse
-    const matches = fullResponse.match(/"content":"(.*?)"/);
-    const extractedMessage = matches ? matches[1].replace(/\\n/g, "\n").replace(/\\"/g, '"') : "Oops! Couldn't parse response.";
+    const parsedChunk = JSON.parse(fullResponse);
+    const extractedMessage = parsedChunk.choices?.[0]?.delta?.content || parsedChunk.choices?.[0]?.message?.content || "Oops! Couldn't parse response.";
 
     responses.push({
       name: persona.name,
