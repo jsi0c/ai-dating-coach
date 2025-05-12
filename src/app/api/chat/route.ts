@@ -34,8 +34,8 @@ export async function POST(request: Request) {
   const { chatLog } = await request.json();
 
   // Count the number of user messages
-  const userMessages = chatLog.filter(msg => msg.role === "user");
-  const isFirstUserMessage = userMessages.length === 1;
+
+  const userMessages = chatLog.filter((msg: { role: string }) => msg.role === "user");  const isFirstUserMessage = userMessages.length === 1;
 
   // Debugging: Uncomment these lines if you want to see what's happening
   // console.log("chatLog:", chatLog.map(msg => ({role: msg.role, name: msg.name, content: msg.content})));
