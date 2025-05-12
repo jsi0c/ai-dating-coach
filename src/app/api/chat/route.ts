@@ -88,8 +88,17 @@ Max 25 words. No questions. Make sure your responses are directly relevant to th
     await new Promise((resolve) => setTimeout(resolve, 1600));
 
     const chunks = [];
-    for await (const chunk of OpenAIStream(payload)) {
-      chunks.push(chunk);
+    const stream = await OpenAIStream(payload);
+    const reader = stream.getReader();
+    let done = false;
+
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
+      if (value) {
+        const chunk = new TextDecoder().decode(value);
+        chunks.push(chunk);
+      }
     }
     const fullResponse = chunks.join("");
     const parsedChunk = JSON.parse(fullResponse);
