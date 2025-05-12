@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server';
 import { OpenAIStream, OpenAIStreamPayload } from '@/utils/OpenAIStream';
 const personas = {
   expert: {
