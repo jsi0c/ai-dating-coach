@@ -145,15 +145,23 @@ export default function Home() {
         <div ref={chatBottomRef} className="h-1" />
       </div>
 
-      {/* Input form */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          sendMessage(message);
-        }}
-        className="fixed bottom-0 left-0 right-0 bg-[#1e1e1e] border-t border-gray-800 px-4 py-3"
+      {/* Input form and suggestions */}
+      <div
+        className={`w-full ${
+          chatLog.length === 0
+            ? 'fixed inset-0 flex items-center justify-center flex-col gap-4 bg-[#1e1e1e]'
+            : 'fixed bottom-0 left-0 right-0 bg-[#1e1e1e] border-t border-gray-800 px-4 py-3'
+        }`}
       >
-        <div className="max-w-md mx-auto flex items-center gap-2">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            sendMessage(message);
+          }}
+          className={`${
+            chatLog.length === 0 ? 'w-full max-w-md' : 'max-w-md mx-auto'
+          } flex items-center gap-2`}
+        >
           <input
             className="flex-1 rounded-md bg-[#2a2a2a] border border-gray-700 text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Type a message..."
@@ -167,30 +175,30 @@ export default function Home() {
           >
             Send
           </button>
-        </div>
-      </form>
+        </form>
 
-      {suggestions.length > 0 && chatLog.length === 0 && (
-        <div className="fixed bottom-[60px] left-0 right-0 px-4">
-          <div className="max-w-md mx-auto bg-[#1e1e1e] space-y-2">
-            <p className="text-gray-400 text-sm">Does one of these fit? Or share in your own words.</p>
-            <div className="flex flex-wrap gap-2">
-              {suggestions.map((prompt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    sendMessage(prompt);
-                    setSuggestions([]);
-                  }}
-                  className="text-sm bg-gray-700 hover:bg-green-700 text-white px-3 py-2 rounded-md transition"
-                >
-                  {prompt}
-                </button>
-              ))}
+        {suggestions.length > 0 && chatLog.length === 0 && (
+          <div className="w-full max-w-md px-4 mt-4">
+            <div className="bg-[#1e1e1e] space-y-2">
+              <p className="text-gray-400 text-sm">Do one of these fit? Or share in your own words.</p>
+              <div className="flex flex-wrap gap-2">
+                {suggestions.map((prompt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      sendMessage(prompt);
+                      setSuggestions([]);
+                    }}
+                    className="text-sm bg-gray-700 hover:bg-green-700 text-white px-3 py-2 rounded-md transition"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }
