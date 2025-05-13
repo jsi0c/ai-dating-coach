@@ -180,8 +180,10 @@ export default function Home() {
         {suggestions.length > 0 && chatLog.length === 0 && (
           <div className="w-full max-w-md px-4 mt-4">
             <div className="bg-[#1e1e1e] space-y-2">
-              <p className="text-gray-400 text-sm">Do one of these fit? Or share in your own words.</p>
-              <div className="flex flex-wrap gap-2">
+            <h1 className="text-3xl font-bold text-green-400 text-center">💬 Dating drama?</h1>
+<p className="text-md text-gray-400 text-center">Get clarity with your personal sounding board.</p>
+<p className="text-gray-400 text-sm">Does one of these fit? Or share in your own words.</p>              
+<div className="flex flex-wrap gap-2">
                 {suggestions.map((prompt, idx) => (
                   <button
                     key={idx}
