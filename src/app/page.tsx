@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 type PersonaResponse = {
   name: string;
   icon: string;
@@ -52,7 +54,7 @@ export default function Home() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chatLog: [...chatLog, { from: 'user', content: input }] }),
+        body: JSON.stringify({ chatLog: [...chatLog, newUserBlock] }),
       });
 
       const data: { responses?: PersonaResponse[]; suggestions?: string[]; error?: string } = await res.json();
@@ -64,8 +66,19 @@ export default function Home() {
         }
 
         if (data.responses) {
-          const newAIBlock: MessageBlock = { from: 'ai', content: data.responses };
-          setChatLog((prev) => [...prev, newAIBlock]);
+          for (const response of data.responses) {
+            setChatLog((prev) => [
+              ...prev,
+              { from: 'ai', content: [{ name: response.name, icon: response.icon, response: 'Typing...' }] },
+            ]);
+
+            await delay(1500);
+
+            setChatLog((prev) => [
+              ...prev.slice(0, -1),
+              { from: 'ai', content: [response] },
+            ]);
+          }
 
           setConversationPhase(
             conversationPhase === 'expert'
