@@ -137,11 +137,7 @@ export default function Home() {
           );
         })}
 
-        {loading && (
-          <div className="mt-3 flex items-center gap-2 text-gray-400 font-mono animate-pulse">
-            <span className="text-green-400">💬</span> Typing...
-          </div>
-        )}
+
 
         <div ref={chatBottomRef} className="h-1" />
       </div>
