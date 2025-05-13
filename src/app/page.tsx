@@ -17,21 +17,18 @@ export default function Home() {
   const [message, setMessage] = useState('');
   const [chatLog, setChatLog] = useState<MessageBlock[]>([]);
   const [loading, setLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]); // 🔥 for prompt suggestions
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [conversationPhase, setConversationPhase] = useState<'expert' | 'awaiting-user-response' | 'others'>('expert');
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
   const sendMessage = async (input: string) => {
     if (!input.trim()) {
       if (chatLog.length === 0) {
-        // 🔥 fetch suggestions if empty initial input
         try {
           const res = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chatLog: [{ from: 'user', content: '' }],
-            }),
+            body: JSON.stringify({ chatLog: [{ from: 'user', content: '' }] }),
           });
 
           const data = await res.json();
@@ -48,16 +45,14 @@ export default function Home() {
     const newUserBlock: MessageBlock = { from: 'user', content: input };
     setChatLog((prev) => [...prev, newUserBlock]);
     setMessage('');
-    setSuggestions([]); // 🔥 hide prompts when user sends something
+    setSuggestions([]);
     setLoading(true);
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chatLog: [...chatLog, { from: 'user', content: input }],
-        }),
+        body: JSON.stringify({ chatLog: [...chatLog, { from: 'user', content: input }] }),
       });
 
       const data: { responses?: PersonaResponse[]; suggestions?: string[]; error?: string } = await res.json();
@@ -72,23 +67,20 @@ export default function Home() {
           const newAIBlock: MessageBlock = { from: 'ai', content: data.responses };
           setChatLog((prev) => [...prev, newAIBlock]);
 
-          if (conversationPhase === 'expert') {
-            setConversationPhase('awaiting-user-response');
-          } else if (conversationPhase === 'awaiting-user-response') {
-            setConversationPhase('others');
-          } else {
-            setConversationPhase('expert');
-          }
+          setConversationPhase(
+            conversationPhase === 'expert'
+              ? 'awaiting-user-response'
+              : conversationPhase === 'awaiting-user-response'
+              ? 'others'
+              : 'expert'
+          );
         }
       } else {
         console.error(data.error || 'Something went wrong');
       }
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error(err.message);
-      } else {
-        console.error('Unknown error');
-      }
+      if (err instanceof Error) console.error(err.message);
+      else console.error('Unknown error');
     } finally {
       setLoading(false);
     }
@@ -99,16 +91,12 @@ export default function Home() {
   }, [chatLog]);
 
   useEffect(() => {
-    sendMessage(''); // 🔥 trigger suggestions on load
+    sendMessage('');
   }, []);
 
   return (
     <main className="min-h-screen bg-[#1e1e1e] text-white flex flex-col items-center px-4 pt-8 pb-28 relative">
       <div className="w-full max-w-md space-y-4">
-        <h1 className="text-3xl font-bold text-green-400">💬 Dating drama?</h1>
-        <p className="text-md text-gray-400">Get clarity with your personal sounding board.</p>
-
-        {/* Chat log */}
         {chatLog.map((block, index) => {
           if (block.from === 'user') {
             return (
@@ -145,7 +133,7 @@ export default function Home() {
         <div ref={chatBottomRef} className="h-1" />
       </div>
 
-      {/* Input form and suggestions */}
+      {/* Input and dynamic landing block */}
       <div
         className={`w-full ${
           chatLog.length === 0
@@ -153,14 +141,19 @@ export default function Home() {
             : 'fixed bottom-0 left-0 right-0 bg-[#1e1e1e] border-t border-gray-800 px-4 py-3'
         }`}
       >
+        {suggestions.length > 0 && chatLog.length === 0 && (
+          <div className="text-center space-y-2 mb-4">
+            <h1 className="text-3xl font-bold text-green-400">💬 Dating drama?</h1>
+            <p className="text-md text-gray-400">Get clarity with your personal sounding board.</p>
+          </div>
+        )}
+
         <form
           onSubmit={(e) => {
             e.preventDefault();
             sendMessage(message);
           }}
-          className={`${
-            chatLog.length === 0 ? 'w-full max-w-md' : 'max-w-md mx-auto'
-          } flex items-center gap-2`}
+          className={`${chatLog.length === 0 ? 'w-full max-w-md' : 'max-w-md mx-auto'} flex items-center gap-2`}
         >
           <input
             className="flex-1 rounded-md bg-[#2a2a2a] border border-gray-700 text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -178,25 +171,21 @@ export default function Home() {
         </form>
 
         {suggestions.length > 0 && chatLog.length === 0 && (
-          <div className="w-full max-w-md px-4 mt-4">
-                        <h1 className="text-3xl font-bold text-green-400 text-center">💬 Dating drama?</h1>
-                        <p className="text-md text-gray-400 text-center">Get clarity with your personal sounding board.</p>
-            <div className="bg-[#1e1e1e] space-y-2">
-<p className="text-gray-400 text-sm">Does one of these fit? Or share in your own words.</p>              
-<div className="flex flex-wrap gap-2">
-                {suggestions.map((prompt, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      sendMessage(prompt);
-                      setSuggestions([]);
-                    }}
-                    className="text-sm bg-gray-700 hover:bg-green-700 text-white px-3 py-2 rounded-md transition"
-                  >
-                    {prompt}
-                  </button>
-                ))}
-              </div>
+          <div className="w-full max-w-md px-4 mt-4 text-center">
+            <p className="text-gray-400 text-sm mb-2">Does one of these fit? Or share in your own words.</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {suggestions.map((prompt, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    sendMessage(prompt);
+                    setSuggestions([]);
+                  }}
+                  className="text-sm bg-gray-700 hover:bg-green-700 text-white px-3 py-2 rounded-md transition"
+                >
+                  {prompt}
+                </button>
+              ))}
             </div>
           </div>
         )}
